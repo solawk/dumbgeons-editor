@@ -1,0 +1,35 @@
+body
+{
+    font-family: "Trebuchet MS", serif;
+}
+
+.dumbgeonRow
+{
+    background-color: #ffffff;
+    width: 100%;
+}
+
+.dumbgeonRow:hover
+{
+    background-color: #eeeeee;
+}
+
+.dumbgeonCell
+{
+    border: 1px solid #999999;
+    padding: 2em;
+}
+
+.dumbgeonName
+{
+    font-size: 2em;
+}
+
+.actionButton
+{
+    background-color: #ffffff;
+    border-width: 1px;
+    border-color: #999999;
+    border-radius: 4px;
+    padding: 1em;
+}
