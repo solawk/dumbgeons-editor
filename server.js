@@ -7,8 +7,8 @@ const fs = require("fs");
 const {createCanvas, loadImage} = require("canvas");
 
 // Constants
-const port = process.env.PORT || 4000;
-const password = process.env.PASSWORD || "dumbgeon-password";
+const port = process.env.PORT;
+const password = process.env.PASSWORD;
 const contentData = JSON.parse(fs.readFileSync("data/contents.json"));
 const canv = createCanvas(64, 64);
 const canvasCTX = canv.getContext("2d");
