@@ -1,0 +1,62 @@
+[
+  {
+    "name": "null",
+    "display": "ОШИБКА",
+    "desc": "ОШИБОЧКА ВЫШЛА"
+  },
+  {
+    "name": "obj_test",
+    "display": "Тестовый объект",
+    "desc": "Описание тестового объекта"
+  },
+  {
+    "name": "tile_air",
+    "display": "Воздух",
+    "desc": "Описание пола"
+  },
+  {
+    "name": "tile_earth",
+    "display": "Земля",
+    "desc": "Описание пола"
+  },
+  {
+    "name": "tile_fire",
+    "display": "Огонь",
+    "desc": "Описание пола"
+  },
+  {
+    "name": "tile_ice",
+    "display": "Лёд",
+    "desc": "Описание пола"
+  },
+  {
+    "name": "tile_wall",
+    "display": "Стена",
+    "desc": "Описание пола"
+  },
+  {
+    "name": "tile_floor",
+    "display": "Пол",
+    "desc": "Описание пола"
+  },
+  {
+    "name": "tile_pit",
+    "display": "Пропасть",
+    "desc": "Описание пола"
+  },
+  {
+    "name": "tile_trap",
+    "display": "Ловушка",
+    "desc": "Описание пола"
+  },
+  {
+    "name": "tile_enter",
+    "display": "Вход",
+    "desc": "Описание пола"
+  },
+  {
+    "name": "tile_exit",
+    "display": "Выход",
+    "desc": "Описание пола"
+  }
+]

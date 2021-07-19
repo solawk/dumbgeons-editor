@@ -1,12 +1,10 @@
 async function init()
 {
-	const urlSearchParams = new URLSearchParams(window.location.search);
-	const params = Object.fromEntries(urlSearchParams.entries());
-	const id = params.id;
+	const id = getID();
 
 	const dumbgeon = await getDumbgeonByID(id);
 
-	if (!dumbgeon.hasOwnProperty("name")) // It's empty
+	if (!dumbgeon) // It's empty
 	{
 		document.getElementById("info").innerHTML = "Ошибка получения информации об этой локации!";
 		return;
@@ -25,14 +23,25 @@ async function init()
 
 	document.body.innerHTML += "&nbsp;&nbsp;";
 
-	const confirmHref = document.createElement("a");
 	const confirmButton = document.createElement("button");
-	confirmHref.href = "/";
 	confirmButton.className = "actionButton";
 	confirmButton.innerHTML = "Да, удалить";
+	confirmButton.onclick = () => { removeAction(id); };
 
-	confirmHref.appendChild(confirmButton);
-	document.body.appendChild(confirmHref);
+	document.body.appendChild(confirmButton);
+}
+
+async function removeAction(id)
+{
+	const success = await removeDumbgeon(id.toString());
+
+	if (!success)
+	{
+		alert("Произошла ошибка удаления!");
+		return;
+	}
+
+	window.location.assign("/");
 }
 
 init();

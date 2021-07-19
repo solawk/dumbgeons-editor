@@ -10,7 +10,9 @@ async function getDumbgeons()
 
 	if (response.ok)
 	{
-		return await response.json();
+		const dumbgeons = await response.json();
+		dumbgeons.sort((a, b) => { return b._id.localeCompare(a._id); });
+		return dumbgeons;
 	}
 	else
 	{

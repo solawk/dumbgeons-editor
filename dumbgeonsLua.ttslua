@@ -1,0 +1,155 @@
+local dumbgeonNameToSpawn = nil;
+local serverURL = "localhost:4000";
+
+local spawnedTiles = {}; -- Массив заспавненных тайлов
+local spawnedTilesCount = 0; -- Количество заспавненных тайлов
+
+function onLoad()
+    Grid.show_lines = true;
+    Grid.snapping = 3;
+end
+
+function onChat(message, player)
+    if startsWith(message, "set") then
+        local locationName = string.sub(message, 5); -- Название локации – без set
+        spawnLocation(locationName); -- Загрузка и спавн локации
+    end
+
+    if message == "clear" then -- Очистка
+        clearLocation();
+    end
+end
+
+function changeServerURL(player, value, id)
+    serverURL = value;
+end
+
+function checkExists(player, value, id)
+    WebRequest.get(serverURL .. "/api/exists?name=" .. value,
+        function(request)
+            if request.is_error then
+                print("Ошибка проверки доступности локации!");
+            else
+                local exists = request.text == "true";
+
+                if exists then
+                    UI.setAttributes("dumbgeonSpawnButton", { color = "rgb(0.75, 1, 0.75)" });
+                    dumbgeonNameToSpawn = value;
+                else
+                    UI.setAttributes("dumbgeonSpawnButton", { color = "rgb(1, 0.25, 0.25)" });
+                    dumbgeonNameToSpawn = nil;
+                end
+            end
+    end);
+end
+
+-- Загрузка локации
+function spawnLocation()
+    if dumbgeonNameToSpawn == nil then
+        print("There's no location with this name!");
+        return;
+    end
+
+    -- Получаем контент локации и её габариты
+    WebRequest.get(serverURL .. "/api/getContent?name=" .. dumbgeonNameToSpawn,
+        function(request)
+            if request.is_error then
+                print("Ошибка загрузки локации!");
+            else
+                local dumbgeon = JSON.decode(request.text);
+                deployLocation(dumbgeon);
+            end
+    end);
+end
+
+-- Спавн локации
+function deployLocation(dumbgeon)
+    local width = dumbgeon["width"];
+    local height = dumbgeon["height"];
+    local content = JSON.decode(dumbgeon["content"]); -- Контент локации в виде массива тайлов
+
+    -- Сдвиги локации на столе, если габарит нечётный
+    local offsetX = 0;
+    local offsetZ = 0;
+    if width % 2 == 1 then offsetX = 1; end
+    if height % 2 == 1 then offsetZ = 1; end
+
+    -- Место для клетки (1:1)
+    local startX = width - 1 + offsetX;
+    local startZ = -height + 1 + offsetZ;
+
+    -- Расстояние между соседними клетками
+    local stepX = -2;
+    local stepZ = 2;
+
+    local index = 1; -- Номер в массиве локации (включая пустые клетки)
+    spawnedTilesCount = 0; -- Номер в массиве заспавненных тайлов (исключая пустые клетки)
+
+    for i = 0, (height - 1) do
+        for j = 0, (width - 1) do
+            local tileName = content[index]["tile"];
+
+            if tileName ~= "empty" then
+                local x = startX + (stepX * j);
+                local z = startZ + (stepZ * i);
+
+                local spawnedTile = spawnTile(x, z, tileName);
+                spawnedTiles[spawnedTilesCount] = spawnedTile;
+                spawnedTilesCount = spawnedTilesCount + 1;
+            end
+
+            index = index + 1;
+        end
+    end
+end
+
+function spawnTile(x, z, name)
+    local height = 0.1;
+    if name == "tile_wall" then height = 1; end
+    if name == "tile_enter" then height = 0.8; end
+    if name == "tile_exit" then height = 0.8; end
+
+    local tile = spawnObject(
+        {
+            type = "Custom_Tile",
+            position = { x, 1, z },
+            scale = { 0.99, 1, 0.99 },
+            sound = false
+        }
+    );
+
+    tile.setCustomObject(
+        {
+            image = serverURL .. "/api/getImg?name=" .. name,
+            thickness = height
+    });
+
+    WebRequest.get(serverURL .. "/api/getMeta?name=" .. name,
+        function(request)
+            if request.is_error then
+                print("Ошибка загрузки описания!");
+            else
+                local meta = JSON.decode(request.text);
+                local display = meta["name"];
+                local desc = meta["desc"];
+                tile.setName(display);
+                tile.setDescription(desc);
+            end
+    end);
+
+    return tile;
+end
+
+function clearLocation()
+    if spawnedTilesCount == 0 then return; end
+
+    for i = 0, (spawnedTilesCount - 1) do
+        spawnedTiles[i].destruct();
+    end
+
+    spawnedTilesCount = 0;
+end
+
+function startsWith(string, start)
+    return string.sub(string, 1, string.len(start)) == start;
+end

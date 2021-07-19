@@ -18,7 +18,11 @@
   },
   "homepage": "https://github.com/solawk/dumbgeons-editor#readme",
   "dependencies": {
+    "body-parser": "^1.19.0",
     "express": "^4.17.1",
     "mongoose": "^5.13.2"
+  },
+  "devDependencies": {
+    "canvas": "^2.8.0"
   }
 }
