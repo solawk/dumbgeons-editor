@@ -26,7 +26,7 @@ let dumbgeonModel = null;
 
 app.use(express.static(__dirname + "/views"), express.static(__dirname + "/data/img"),
 	express.static(__dirname + "/data/img/objects"), express.static(__dirname + "/data/img/tiles"));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: "1mb" }));
 
 app.listen(port, () =>
 {
