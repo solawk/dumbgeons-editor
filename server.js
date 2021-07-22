@@ -360,7 +360,6 @@ app.get("/api/exists", async (request, response) =>
 app.get("/api/ping", (request, response) =>
 {
 	response.send("pong");
-	console.log("Pinged");
 });
 
 // Test page
