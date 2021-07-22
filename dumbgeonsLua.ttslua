@@ -1,5 +1,5 @@
 local dumbgeonNameToSpawn = nil;
-local serverURL = "localhost:4000";
+local serverURL = "https://dumbgeons.herokuapp.com";
 
 local spawnedTiles = {}; -- Массив заспавненных тайлов
 local spawnedTilesCount = 0; -- Количество заспавненных тайлов
@@ -18,6 +18,13 @@ function onChat(message, player)
     if message == "clear" then -- Очистка
         clearLocation();
     end
+end
+
+function ping()
+  WebRequest.get(serverURL .. "/api/ping",
+      function(request)
+          print("Pong");
+  end);
 end
 
 function changeServerURL(player, value, id)
