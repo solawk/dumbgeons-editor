@@ -1,6 +1,7 @@
 <Panel visibility="Black">
   <InputField anchorMin="0.15 0.85" anchorMax="0.25 0.875" onEndEdit="Global/changeServerURL" placeholder="Сервер (https://dumbgeons.herokuapp.com по умолчанию)" id="dumbgeonNameInput">https://dumbgeons.herokuapp.com</InputField>
   <InputField anchorMin="0.15 0.8" anchorMax="0.25 0.825" onEndEdit="Global/checkExists" placeholder="Название локации" id="dumbgeonNameInput"></InputField>
+  <Button anchorMin="0.05 0.86" anchorMax="0.1 0.88" onclick="Global/ping">Пинг сервера</Button>
   <Button anchorMin="0.1 0.725" anchorMax="0.23 0.775" color="rgb(1, 0.25, 0.25)" onclick="Global/spawnLocation" id="dumbgeonSpawnButton">Загрузка локации</Button>
   <Button anchorMin="0.25 0.725" anchorMax="0.3 0.775" color="rgb(1, 0.75, 0.75)" onclick="Global/clearLocation">Удаление локации</Button>
 </Panel>
