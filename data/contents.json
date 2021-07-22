@@ -10,6 +10,16 @@
     "desc": "Описание тестового объекта"
   },
   {
+    "name": "obj_impostor",
+    "display": "Импостор",
+    "desc": "Амогус"
+  },
+  {
+    "name": "obj_soldier",
+    "display": "Солдат",
+    "desc": "maggots!"
+  },
+  {
     "name": "tile_air",
     "display": "Воздух",
     "desc": "Описание пола"

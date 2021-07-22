@@ -8,6 +8,9 @@ const tileVisibles = [ "- Пустой -" ];
 let tileSelected = "empty";
 
 // Objects
+const objSelection = [ "remove" ];
+const objVisibles = [ "- Удаление объекта -" ];
+let objSelected = "remove";
 
 // Interaction
 let mode = "info"; // tile - obj - info
@@ -68,6 +71,26 @@ async function init()
 		optionElement.value = tileSelection[i];
 
 		document.getElementById("brushTile").appendChild(optionElement);
+	}
+
+	// Objects
+	for (const [name, disp] of display)
+	{
+		if (name.startsWith("obj_"))
+		{
+			objSelection.push(name);
+			objVisibles.push(disp);
+		}
+	}
+
+	for (let i = 0; i < objSelection.length; i++)
+	{
+		const optionElement = document.createElement("option");
+		if (objSelection[i] === objSelected) optionElement.setAttribute("selected", "selected");
+		optionElement.innerHTML = objVisibles[i];
+		optionElement.value = objSelection[i];
+
+		document.getElementById("brushObj").appendChild(optionElement);
 	}
 
 	updateHeader();
@@ -157,26 +180,10 @@ function updateContent()
 
 			// Top object image
 			const cellImage = document.createElement("img");
-			cellImage.style.width = "60%";
+			cellImage.style.width = "70%";
 			cellDiv.appendChild(cellImage);
 
-			const objects = accessCell(i, j).objects;
-
-			if (objects.length === 0)
-			{
-				cellImage.src = "";
-			}
-			else
-			{
-				if (img.has(objects[0].name))
-				{
-					cellImage.src = img.get(objects[0].name);
-				}
-				else
-				{
-					cellImage.src = img.get("null");
-				}
-			}
+			setCellTopObj(cell, i, j);
 		}
 	}
 
@@ -207,11 +214,34 @@ function setCellBg(cell, row, col)
 	}
 }
 
+function setCellTopObj(cell, row, col)
+{
+	const objects = accessCell(row, col).objects;
+	const cellImage = cell.firstChild.firstChild;
+
+	if (objects.length === 0)
+	{
+		cellImage.src = "";
+	}
+	else
+	{
+		if (img.has(objects[0].name))
+		{
+			cellImage.src = img.get(objects[0].name);
+		}
+		else
+		{
+			cellImage.src = img.get("null");
+		}
+	}
+}
+
 function updateSingleContent(row, col)
 {
 	const cell = document.getElementById("cell" + row.toString() + ":" + col.toString());
 
 	setCellBg(cell, row, col);
+	setCellTopObj(cell, row, col);
 }
 
 function clearCellInfo()
@@ -234,7 +264,6 @@ function updateCellInfo(row, col)
 	cellInfoPosition.innerHTML = "Клетка (" + (row + 1).toString() + ":" + (col + 1).toString() + ")";
 
 	// Tile
-	// Theme
 	const cellInfoTileImg = document.getElementById("cellInfoTileImg");
 	const cellInfoTile = document.getElementById("cellInfoTile");
 	cellInfoTileImg.innerHTML = "";
@@ -277,6 +306,59 @@ function updateCellInfo(row, col)
 	}
 
 	// Objects
+	const cellInfoObjectsTable = document.createElement("table");
+	cellInfoObjectsTable.style.width = "100%";
+	cellInfoObjectsTable.innerHTML = "";
+	document.getElementById("cellInfoObjects").innerHTML = "";
+	document.getElementById("cellInfoObjects").appendChild(cellInfoObjectsTable);
+
+	const objects = accessCell(row, col).objects;
+
+	for (let i = 0; i < objects.length; i++)
+	{
+		const object = objects[i];
+
+		const tr = document.createElement("tr");
+		const td = document.createElement("td");
+		td.className = "editorBordered editorHoverable";
+		td.style.padding = "1em";
+
+		cellInfoObjectsTable.appendChild(tr);
+		tr.appendChild(td);
+
+		const removeButton = document.createElement("button");
+		removeButton.innerHTML = "X";
+		removeButton.className = "actionButton";
+		removeButton.style.width = "10%";
+		removeButton.style.padding = "0";
+		removeButton.style.backgroundColor = "#ffbbbb";
+		removeButton.setAttribute("onclick", "accessCell(" + row.toString() + ", " +
+			col.toString() + ").objects.splice(" + i + ", 1); updateSingleContent(" + row.toString() + ", " +
+			col.toString() + "); updateCellInfo(" + row.toString() + ", " +
+			col.toString() + "); regChange();");
+		td.appendChild(removeButton);
+		td.innerHTML += "&nbsp;"
+
+		const heightInput = document.createElement("input");
+		heightInput.setAttribute("value", object.height.toString());
+		heightInput.title = "Высота над полем";
+		heightInput.type = "number";
+		heightInput.min = "0";
+		heightInput.style.width = "15%";
+		heightInput.setAttribute("onchange", "accessCell(" + row.toString() + ", " +
+			col.toString() + ").objects[" + i + "].height = parseFloat(this.value); regChange();");
+		td.appendChild(heightInput);
+		td.innerHTML += "&nbsp;";
+
+		const objImg = document.createElement("img");
+		objImg.src = img.get(object.name);
+		objImg.style.minHeight = "3em";
+		objImg.style.height = "3em";
+		objImg.style.verticalAlign = "middle";
+
+		td.appendChild(objImg);
+		td.innerHTML += "&nbsp;" + objVisibles[objSelection.indexOf(object.name)];
+	}
 }
 
 function selectBrushTile(tile)
@@ -370,8 +452,17 @@ function addRow(side)
 		dumbgeon.height++;
 	}
 
-	if (dumbgeon.width > 99) dumbgeon.width = 99;
-	if (dumbgeon.height > 99) dumbgeon.height = 99;
+	if (dumbgeon.width > 65)
+	{
+		dumbgeon.width = 65;
+		return;
+	}
+
+	if (dumbgeon.height > 50)
+	{
+		dumbgeon.height = 50;
+		return;
+	}
 
 	updateMeta();
 	resizeDumbgeon(side, true);
@@ -567,6 +658,11 @@ function onCellClick()
 	{
 		cellClickTile(row, col);
 	}
+
+	if (mode === "obj")
+	{
+		cellClickObj(row, col);
+	}
 }
 
 function cellClickInfo(row, col)
@@ -624,6 +720,75 @@ function cellClickTile(row, col)
 				for (let j = startCol; j <= endCol; j++)
 				{
 					accessCell(i, j).tile = tileToSet;
+				}
+			}
+
+			updateContent();
+		}
+	}
+}
+
+function cellClickObj(row, col)
+{
+	const object = document.getElementById("brushObj").value;
+
+	const objToSet =
+	{
+		name: object,
+		height: 0,
+		locked: false
+	};
+
+	if (brushMode === "single")
+	{
+		regChange();
+
+		if (object !== "remove")
+		{
+			accessCell(row, col).objects.unshift(objToSet);
+		}
+		else
+		{
+			accessCell(row, col).objects.shift(objToSet);
+		}
+
+		updateSingleContent(row, col);
+	}
+
+	if (brushMode === "rectangle")
+	{
+		if (!anchor.set)
+		{
+			anchor.set = true;
+			anchor.row = row;
+			anchor.col = col;
+
+			rectangleSelPaint(row, col);
+		}
+		else
+		{
+			regChange();
+
+			anchor.set = false;
+
+			const startRow = Math.min(anchor.row, row);
+			const startCol = Math.min(anchor.col, col);
+
+			const endRow = Math.max(anchor.row, row);
+			const endCol = Math.max(anchor.col, col);
+
+			for (let i = startRow; i <= endRow; i++)
+			{
+				for (let j = startCol; j <= endCol; j++)
+				{
+					if (object !== "remove")
+					{
+						accessCell(i, j).objects.unshift(objToSet);
+					}
+					else
+					{
+						accessCell(i, j).objects.shift(objToSet);
+					}
 				}
 			}
 
