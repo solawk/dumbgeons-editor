@@ -303,7 +303,7 @@ app.get("/api/getContent", (request, response) =>
 		{
 			for (const contentThing of contentData)
 			{
-				if (contentThing.name === obj.tile)
+				if (contentThing.name === obj.tile || contentThing.name === obj.name)
 				{
 					obj.display = contentThing.display;
 					obj.desc = contentThing.desc;
@@ -325,40 +325,6 @@ app.get("/api/getContent", (request, response) =>
 
 		response.send(resObject);
 	});
-});
-
-app.get("/api/getMeta", (request, response) =>
-{
-	const name = request.query.name;
-
-	if (name === "undefined")
-	{
-		console.log("No name in a getMeta call!");
-		response.sendStatus(400);
-		return;
-	}
-
-	let display = null;
-	let desc = null;
-
-	for (const contentThing of contentData)
-	{
-		if (contentThing.name === name)
-		{
-			display = contentThing.display;
-			desc = contentThing.desc;
-		}
-	}
-
-	if (display == null || desc == null)
-	{
-		console.log("Nothing found with name " + name + " in a getMeta call!");
-		response.sendStatus(404);
-	}
-	else
-	{
-		response.send({name: display, desc: desc});
-	}
 });
 
 app.get("/api/exists", async (request, response) =>

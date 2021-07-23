@@ -1,0 +1,248 @@
+local heightAboveFigurine = 3;
+
+local numbers = {};
+numbers["health"] = 0;
+numbers["action"] = 0;
+numbers["mana"] = 0;
+
+local numberDisplay = {};
+numberDisplay["health"] = "Здоровье";
+numberDisplay["action"] = "Очки действий";
+numberDisplay["mana"] = "Мана";
+
+local digitImg = {};
+digitImg[0] = "https://imgur.com/VAZreWo.png";
+digitImg[1] = "https://imgur.com/T1bputh.png";
+digitImg[2] = "https://imgur.com/MZf6E0L.png";
+digitImg[3] = "https://imgur.com/H4vgoc5.png";
+digitImg[4] = "https://imgur.com/FtWmLhs.png";
+digitImg[5] = "https://imgur.com/3vNGiLh.png";
+digitImg[6] = "https://imgur.com/3rNMXp9.png";
+digitImg[7] = "https://imgur.com/CYWu4oc.png";
+digitImg[8] = "https://imgur.com/thHBp11.png";
+digitImg[9] = "https://imgur.com/tTfjsB7.png";
+
+local borderImg = {};
+borderImg["healthCenter"] = "https://imgur.com/WUls74p.png";
+borderImg["healthLeft"] = "https://imgur.com/pSWLfQ0.png";
+borderImg["healthRight"] = "https://imgur.com/b2MUvRU.png";
+borderImg["actionCenter"] = "https://imgur.com/v78ofnj.png";
+borderImg["actionLeft"] = "https://imgur.com/vaaYfKy.png";
+borderImg["actionRight"] = "https://imgur.com/VMEUVwF.png";
+borderImg["manaCenter"] = "https://imgur.com/rxz6jAs.png";
+borderImg["manaLeft"] = "https://imgur.com/4Waxehd.png";
+borderImg["manaRight"] = "https://imgur.com/FmeDAfF.png";
+
+local tokenSelected = "health";
+
+local tokens = {};
+tokens[0] = "health";
+tokens[1] = "speed";
+tokens[2] = "regen";
+tokens[3] = "power";
+
+local tokensCount = 4;
+
+local tokenPositiveImg = {};
+tokenPositiveImg["health"] = "https://static.wikia.nocookie.net/minecraft_gamepedia/images/6/66/Regeneration_JE3_BE2.png/revision/latest?cb=20210312153727";
+tokenPositiveImg["speed"] = "https://static.wikia.nocookie.net/minecraft_gamepedia/images/c/ce/Speed_JE3_BE2.png/revision/latest?cb=20210224080116";
+tokenPositiveImg["regen"] = "https://static.wikia.nocookie.net/minecraft_gamepedia/images/6/6e/Instant_Health_JE1.png/revision/latest?cb=20210312154128";
+tokenPositiveImg["power"] = "https://static.wikia.nocookie.net/minecraft_gamepedia/images/c/cb/Strength_JE3_BE2.png/revision/latest?cb=20210224080132";
+
+local tokenNegativeImg = {};
+tokenNegativeImg["health"] = nil;
+tokenNegativeImg["speed"] = "https://static.wikia.nocookie.net/minecraft_gamepedia/images/8/83/Slowness_JE3_BE2.png/revision/latest?cb=20210224080107";
+tokenNegativeImg["regen"] = "https://static.wikia.nocookie.net/minecraft_gamepedia/images/4/4f/Instant_Damage_JE1.png/revision/latest?cb=20210224074826";
+tokenNegativeImg["power"] = "https://static.wikia.nocookie.net/minecraft_gamepedia/images/e/e6/Weakness_JE3_BE2.png/revision/latest?cb=20210224080150";
+
+local tokenCount = {};
+
+function onLoad(script_state)
+    if script_state == "" then
+
+        numbers["health"] = 0;
+        numbers["action"] = 0;
+        numbers["mana"] = 0;
+
+        for s = 0, (tokensCount - 1) do
+            tokenCount[tokens[s]] = 0;
+        end
+
+    else
+
+        local state = JSON.decode(script_state);
+
+        numbers["health"] = state["health"];
+        numbers["action"] = state["action"];
+        numbers["mana"] = state["mana"];
+
+        for s = 0, (tokensCount - 1) do
+            tokenCount[tokens[s]] = state["token_" .. tokens[s]];
+        end
+
+    end
+
+    showAllInfo();
+    deployContextMenu();
+end
+
+function onSave()
+    local state = {};
+
+    state["health"] = numbers["health"];
+    state["action"] = numbers["action"];
+    state["mana"] = numbers["mana"];
+
+    for s = 0, (tokensCount - 1) do
+        state["token_" .. tokens[s]] = tokenCount[tokens[s]];
+    end
+
+    return JSON.encode(state);
+end
+
+function onObjectDestroy(dying_object)
+    if dying_object == self then
+        self.setDecals({});
+    end
+end
+
+function addToken()
+    tokenCount[tokenSelected] = tokenCount[tokenSelected] + 1;
+
+    showAllInfo();
+    deployContextMenu();
+end
+
+function removeToken()
+    tokenCount[tokenSelected] = tokenCount[tokenSelected] - 1;
+    if tokenCount[tokenSelected] < 0 and tokenNegativeImg[tokenSelected] == nil then tokenCount[tokenSelected] = 0; end
+
+    showAllInfo();
+    deployContextMenu();
+end
+
+function deployContextMenu()
+    self.clearContextMenu();
+
+    self.addContextMenuItem("Add " .. tokenSelected, addToken, true);
+    self.addContextMenuItem("Remove " .. tokenSelected, removeToken, true);
+
+    for s = 0, (tokensCount - 1) do
+        self.addContextMenuItem("Manage " .. tokens[s],
+            function()
+                tokenSelected = tokens[s];
+                deployContextMenu();
+        end);
+    end
+
+    addNumberActions("health");
+    addNumberActions("action");
+    addNumberActions("mana");
+end
+
+function addNumberActions(name)
+    self.addContextMenuItem(numberDisplay[name] .. " +1", function() changeNumber(name, 1); showAllInfo(); end, true);
+    self.addContextMenuItem(numberDisplay[name] .. " -1", function() changeNumber(name, - 1); showAllInfo(); end, true);
+end
+
+function changeNumber(name, delta)
+    numbers[name] = numbers[name] + delta;
+    if numbers[name] < 0 then numbers[name] = 0; end
+end
+
+function showAllInfo()
+    self.setDecals({});
+
+    showAllNumbers();
+    showTokens();
+end
+
+function showAllNumbers()
+    showANumber("health", - 0.8);
+    showANumber("action", 0);
+    showANumber("mana", 0.8);
+end
+
+function showANumber(name, xShift)
+    local numberInQuestion = numbers[name];
+
+    local digitCount = 1;
+    if numberInQuestion > 9 then digitCount = 2; end
+    if numberInQuestion > 99 then digitCount = 3; end
+    if numberInQuestion > 999 then numberInQuestion = 999; end
+
+    digits = {};
+    for i = 1, digitCount do
+        local n = 10 ^ i;
+        local n1 = 10 ^ (i - 1);
+        local digit = math.floor((numberInQuestion % n) / n1);
+
+        digits[digitCount - i] = digit; -- index 0 is the biggest
+    end
+
+    local stepX = 0.2;
+    local startX = -((digitCount - 1) * stepX) / 2;
+
+    for i = 0, (digitCount - 1) do
+        putDecal(startX + (stepX * i) + xShift, 0, stepX, 0.5, digitImg[digits[i]], true);
+    end
+
+    -- Border
+
+    putDecal(xShift, 0, stepX * digitCount, 0.5, borderImg[name .. "Center"], true);
+    putDecal(xShift + startX - 0.125, 0, 0.05, 0.5, borderImg[name .. "Left"], true);
+    putDecal(xShift - startX + 0.125, 0, 0.05, 0.5, borderImg[name .. "Right"], true);
+end
+
+function showTokens()
+    local activeTokens = 0;
+
+    for s = 0, (tokensCount - 1) do
+        if tokenCount[tokens[s]] ~= 0 then
+            local count = tokenCount[tokens[s]];
+            local isPositive = true;
+
+            if count < 0 then
+                isPositive = false;
+                count = -count;
+            end
+
+            local startX = -(count - 1) / 2;
+            local stepX = 1;
+
+            local token = tokenPositiveImg[tokens[s]];
+            if not isPositive then token = tokenNegativeImg[tokens[s]]; end
+
+            for i = 0, (count - 1) do
+                putDecal(startX + (stepX * i), activeTokens + 1, 1, 1, token, false);
+            end
+
+            activeTokens = activeTokens + 1;
+        end
+    end
+end
+
+function putDecal(xShift, yShift, xScale, yScale, tokenURL, preserveDirection)
+    local dirMultiplier = 1;
+    if preserveDirection then dirMultiplier = -1; end
+
+    self.addDecal(
+        {
+            name = "Decal",
+            url = tokenURL,
+            position = { xShift, heightAboveFigurine + yShift, 0 },
+            rotation = { 0, 0, 0 },
+            scale = { xScale, yScale, 1 }
+        }
+    );
+
+    self.addDecal(
+        {
+            name = "Decal",
+            url = tokenURL,
+            position = { xShift * dirMultiplier, heightAboveFigurine + yShift, 0 },
+            rotation = { 0, 180, 0 },
+            scale = { xScale, yScale, 1 }
+        }
+    );
+end

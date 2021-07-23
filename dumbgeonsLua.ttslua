@@ -4,27 +4,32 @@ local serverURL = "https://dumbgeons.herokuapp.com";
 local spawnedTiles = {}; -- Массив заспавненных тайлов
 local spawnedTilesCount = 0; -- Количество заспавненных тайлов
 
+local clonedObjectsContainerName = "ClonesContainer";
+local clonedObjectsContainerObj = nil;
+
 function onLoad()
     Grid.show_lines = true;
     Grid.snapping = 3;
-end
 
-function onChat(message, player)
-    if startsWith(message, "set") then
-        local locationName = string.sub(message, 5); -- Название локации – без set
-        spawnLocation(locationName); -- Загрузка и спавн локации
-    end
+    -- Кэширование мешка с клонируемыми объектами
+    local allObjects = getAllObjects();
+    local i = 1;
+    while allObjects[i] ~= nil do
+        if allObjects[i].getName() == clonedObjectsContainerName then
+            clonedObjectsContainerObj = allObjects[i];
+            print(clonedObjectsContainerName .. " cached!");
 
-    if message == "clear" then -- Очистка
-        clearLocation();
+            break;
+        end
+        i = i + 1;
     end
 end
 
 function ping()
-  WebRequest.get(serverURL .. "/api/ping",
-      function(request)
-          print("Pong");
-  end);
+    WebRequest.get(serverURL .. "/api/ping",
+        function(request)
+            print("Pong");
+    end);
 end
 
 function changeServerURL(player, value, id)
@@ -40,10 +45,10 @@ function checkExists(player, value, id)
                 local exists = request.text == "true";
 
                 if exists then
-                    UI.setAttributes("dumbgeonSpawnButton", { color = "rgb(0.75, 1, 0.75)" });
+                    UI.setAttributes("dumbgeonLoadButton", { color = "rgb(0.75, 1, 0.75)" });
                     dumbgeonNameToSpawn = value;
                 else
-                    UI.setAttributes("dumbgeonSpawnButton", { color = "rgb(1, 0.25, 0.25)" });
+                    UI.setAttributes("dumbgeonLoadButton", { color = "rgb(1, 0.25, 0.25)" });
                     dumbgeonNameToSpawn = nil;
                 end
             end
@@ -51,7 +56,7 @@ function checkExists(player, value, id)
 end
 
 -- Загрузка локации
-function spawnLocation()
+function loadLocation()
     if dumbgeonNameToSpawn == nil then
         print("There's no location with this name!");
         return;
@@ -64,13 +69,12 @@ function spawnLocation()
                 print("Ошибка загрузки локации!");
             else
                 local dumbgeon = JSON.decode(request.text);
-                deployLocation(dumbgeon);
+                spawnLocation(dumbgeon);
             end
     end);
 end
 
--- Спавн локации
-function deployLocation(dumbgeon)
+function spawnLocation(dumbgeon)
     local width = dumbgeon["width"];
     local height = dumbgeon["height"];
     local content = JSON.decode(dumbgeon["content"]); -- Контент локации в виде массива тайлов
@@ -97,6 +101,7 @@ function deployLocation(dumbgeon)
             local tileName = content[index]["tile"];
             local display = content[index]["display"];
             local desc = content[index]["desc"];
+            local objects = content[index]["objects"];
 
             if tileName ~= "empty" then
                 local x = startX + (stepX * j);
@@ -105,6 +110,8 @@ function deployLocation(dumbgeon)
                 local spawnedTile = spawnTile(x, z, tileName, display, desc);
                 spawnedTiles[spawnedTilesCount] = spawnedTile;
                 spawnedTilesCount = spawnedTilesCount + 1;
+
+                spawnTileObjects(x, z, objects);
             end
 
             index = index + 1;
@@ -137,6 +144,31 @@ function spawnTile(x, z, name, display, desc)
     tile.setDescription(desc);
 
     return tile;
+end
+
+function spawnTileObjects(x, z, objects)
+    local i = 1;
+    while objects[i] ~= nil do
+        spawnTileObject(x, objects[i].height + 1.5, z, objects[i].name, objects[i].display, objects[i].desc);
+        i = i + 1;
+    end
+end
+
+function spawnTileObject(sx, sy, sz, objectName, display, desc)
+    local containedObjects = clonedObjectsContainerObj.getObjects();
+    local i = 1;
+    while containedObjects[i] ~= nil do
+        if containedObjects[i].name == objectName then
+            local takenObject = clonedObjectsContainerObj.takeObject({ guid = containedObjects[i].guid });
+            local clonedObject = takenObject.clone({position = { x = sx, y = sy, z = sz }, snap_to_grid = true});
+            clonedObject.setName(display);
+            clonedObject.setDescription(desc);
+            clonedObjectsContainerObj.putObject(takenObject);
+
+            break;
+        end
+        i = i + 1;
+    end
 end
 
 function clearLocation()
