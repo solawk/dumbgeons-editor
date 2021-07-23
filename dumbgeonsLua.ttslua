@@ -95,12 +95,14 @@ function deployLocation(dumbgeon)
     for i = 0, (height - 1) do
         for j = 0, (width - 1) do
             local tileName = content[index]["tile"];
+            local display = content[index]["display"];
+            local desc = content[index]["desc"];
 
             if tileName ~= "empty" then
                 local x = startX + (stepX * j);
                 local z = startZ + (stepZ * i);
 
-                local spawnedTile = spawnTile(x, z, tileName);
+                local spawnedTile = spawnTile(x, z, tileName, display, desc);
                 spawnedTiles[spawnedTilesCount] = spawnedTile;
                 spawnedTilesCount = spawnedTilesCount + 1;
             end
@@ -110,7 +112,7 @@ function deployLocation(dumbgeon)
     end
 end
 
-function spawnTile(x, z, name)
+function spawnTile(x, z, name, display, desc)
     local height = 0.1;
     if name == "tile_wall" then height = 1; end
     if name == "tile_enter" then height = 0.8; end
@@ -131,18 +133,8 @@ function spawnTile(x, z, name)
             thickness = height
     });
 
-    WebRequest.get(serverURL .. "/api/getMeta?name=" .. name,
-        function(request)
-            if request.is_error then
-                print("Ошибка загрузки описания!");
-            else
-                local meta = JSON.decode(request.text);
-                local display = meta["name"];
-                local desc = meta["desc"];
-                tile.setName(display);
-                tile.setDescription(desc);
-            end
-    end);
+    tile.setName(display);
+    tile.setDescription(desc);
 
     return tile;
 end

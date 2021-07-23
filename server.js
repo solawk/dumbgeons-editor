@@ -26,7 +26,7 @@ let dumbgeonModel = null;
 
 app.use(express.static(__dirname + "/views"), express.static(__dirname + "/data/img"),
 	express.static(__dirname + "/data/img/objects"), express.static(__dirname + "/data/img/tiles"));
-app.use(bodyParser.json({ limit: "1mb" }));
+app.use(bodyParser.json({limit: "1mb"}));
 
 app.listen(port, () =>
 {
@@ -289,7 +289,7 @@ app.get("/api/getContent", (request, response) =>
 		return;
 	}
 
-	dumbgeonModel.findOne({name: name}, (err, dumbgeon) =>
+	dumbgeonModel.findOne({name: name}, async (err, dumbgeon) =>
 	{
 		if (err || dumbgeon == null)
 		{
@@ -298,7 +298,32 @@ app.get("/api/getContent", (request, response) =>
 			return;
 		}
 
-		response.send({width: dumbgeon.width, height: dumbgeon.height, content: dumbgeon.content});
+		const contentObj = await JSON.parse(dumbgeon.content);
+		const addMeta = function(obj)
+		{
+			for (const contentThing of contentData)
+			{
+				if (contentThing.name === obj.tile)
+				{
+					obj.display = contentThing.display;
+					obj.desc = contentThing.desc;
+				}
+			}
+		}
+
+		for (const cell of contentObj)
+		{
+			addMeta(cell);
+
+			for (const object of cell.objects)
+			{
+				addMeta(object);
+			}
+		}
+
+		const resObject = {width: dumbgeon.width, height: dumbgeon.height, content: await JSON.stringify(contentObj)};
+
+		response.send(resObject);
 	});
 });
 
