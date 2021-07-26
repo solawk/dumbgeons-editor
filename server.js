@@ -58,6 +58,15 @@ async function duplicates(name, id)
 	return await dumbgeonModel.exists({name: name, _id: {$ne: id}});
 }
 
+function randomGeneration(settings)
+{
+	const dumbgeon = {"width":10,"height":5,"content":"[{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_floor\",\"objects\":[],\"display\":\"Пол\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_floor\",\"objects\":[],\"display\":\"Пол\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_pit\",\"objects\":[],\"display\":\"Пропасть\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_pit\",\"objects\":[],\"display\":\"Пропасть\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_pit\",\"objects\":[],\"display\":\"Пропасть\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_pit\",\"objects\":[],\"display\":\"Пропасть\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_floor\",\"objects\":[],\"display\":\"Пол\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_floor\",\"objects\":[],\"display\":\"Пол\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_enter\",\"objects\":[],\"display\":\"Вход\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_floor\",\"objects\":[{\"name\":\"obj_impostor\",\"height\":0,\"contains\":\"none\",\"display\":\"Импостор\",\"desc\":\"Амогус\"}],\"display\":\"Пол\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_pit\",\"objects\":[],\"display\":\"Пропасть\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_pit\",\"objects\":[],\"display\":\"Пропасть\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_pit\",\"objects\":[],\"display\":\"Пропасть\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_pit\",\"objects\":[],\"display\":\"Пропасть\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_floor\",\"objects\":[],\"display\":\"Пол\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_exit\",\"objects\":[],\"display\":\"Выход\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_floor\",\"objects\":[],\"display\":\"Пол\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_floor\",\"objects\":[{\"name\":\"obj_container_chest\",\"height\":0,\"contains\":[{\"name\":\"obj_soldier\",\"height\":0,\"contains\":\"none\",\"display\":\"Солдат\",\"desc\":\"maggots!\"},{\"name\":\"obj_impostor\",\"height\":0,\"contains\":\"none\",\"display\":\"Импостор\",\"desc\":\"Амогус\"},{\"name\":\"obj_soldier\",\"height\":0,\"contains\":\"none\",\"display\":\"Солдат\",\"desc\":\"maggots!\"},{\"name\":\"obj_impostor\",\"height\":0,\"contains\":\"none\",\"display\":\"Импостор\",\"desc\":\"Амогус\"},{\"name\":\"obj_test\",\"height\":0,\"contains\":\"none\",\"display\":\"Тестовый объект\",\"desc\":\"Описание тестового объекта\"}],\"display\":\"Сундук\",\"desc\":\"Содержит штуки\"}],\"display\":\"Пол\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_pit\",\"objects\":[],\"display\":\"Пропасть\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_pit\",\"objects\":[],\"display\":\"Пропасть\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_pit\",\"objects\":[],\"display\":\"Пропасть\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_pit\",\"objects\":[],\"display\":\"Пропасть\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_floor\",\"objects\":[],\"display\":\"Пол\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_floor\",\"objects\":[],\"display\":\"Пол\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"},{\"tile\":\"tile_wall\",\"objects\":[],\"display\":\"Стена\",\"desc\":\"Описание пола\"}]"};
+
+	dumbgeon.name = "Сгенерированная локация";
+	dumbgeon.description = "Эта локация была случайно сгенерирована";
+	return dumbgeon;
+}
+
 // Routing
 
 // API
@@ -318,6 +327,14 @@ app.get("/api/getContent", (request, response) =>
 			for (const object of cell.objects)
 			{
 				addMeta(object);
+
+				if (object.contains !== "none")
+				{
+					for (const containedObject of object.contains)
+					{
+						addMeta(containedObject);
+					}
+				}
 			}
 		}
 
@@ -353,6 +370,15 @@ app.get("/api/ping", (request, response) =>
 	response.send("pong");
 });
 
+app.get("/api/random", (request, response) =>
+{
+	const generationSettings = request.body;
+
+	const generatedDumbgeon = randomGeneration(generationSettings);
+
+	response.send(generatedDumbgeon);
+});
+
 // Test page
 app.get("/test", async (request, response) =>
 {
@@ -385,10 +411,16 @@ app.get("/editor", (request, response) =>
 {
 	if (!request.query.hasOwnProperty("id"))
 	{
-		console.log("No id in an editor call!");
-		response.send("No id was specified!");
+		console.log("No id nor generated dumbgeon found in the editor call!");
+		response.send("No id nor generated dumbgeon was specified!");
 		return;
 	}
 
+	response.sendFile(__dirname + "/views/editor.html");
+});
+
+// Random generation
+app.get("/random", (request, response) =>
+{
 	response.sendFile(__dirname + "/views/editor.html");
 });

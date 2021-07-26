@@ -149,7 +149,22 @@ end
 function spawnTileObjects(x, z, objects)
     local i = 1;
     while objects[i] ~= nil do
-        spawnTileObject(x, objects[i].height + 1.5, z, objects[i].name, objects[i].display, objects[i].desc);
+        local spawnedObject = spawnTileObject(x, objects[i].height + 1.5, z, objects[i].name, objects[i].display, objects[i].desc);
+
+        -- Спаун содержимого объекта-контейнера
+        if objects[i].contains ~= "none" then
+            local containedi = 1;
+            while objects[i].contains[containedi] ~= nil do
+                local containedObject = objects[i].contains[containedi];
+                local spawnedContainedObject = spawnTileObject(x, 10, z, containedObject.name, containedObject.display, containedObject.desc);
+                if spawnedContainedObject ~= nil then
+                    spawnedObject.putObject(spawnedContainedObject);
+                end
+
+                containedi = containedi + 1;
+            end
+        end
+
         i = i + 1;
     end
 end
@@ -165,10 +180,12 @@ function spawnTileObject(sx, sy, sz, objectName, display, desc)
             clonedObject.setDescription(desc);
             clonedObjectsContainerObj.putObject(takenObject);
 
-            break;
+            return clonedObject;
         end
         i = i + 1;
     end
+
+    print("Prototype object " .. objectName .. " not found!");
 end
 
 function clearLocation()

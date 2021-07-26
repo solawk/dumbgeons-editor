@@ -20,6 +20,11 @@
     "desc": "maggots!"
   },
   {
+    "name": "obj_container_chest",
+    "display": "Сундук",
+    "desc": "Содержит штуки"
+  },
+  {
     "name": "tile_air",
     "display": "Воздух",
     "desc": "Описание пола"

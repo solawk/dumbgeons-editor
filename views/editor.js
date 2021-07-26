@@ -2,6 +2,8 @@ let dumbgeon = null;
 let changed = false;
 let selected = { active: false, row: null, col: null };
 
+let pristineRandom = false; // This location was randomly generated and has not been saved yet
+
 // Tiles
 const tileSelection = [ "empty" ];
 const tileVisibles = [ "- Пустой -" ];
@@ -25,11 +27,11 @@ function DumbgeonCell(tile, objects)
 	this.tile = tile;
 	this.objects = objects;
 }
-function DumbgeonObject(name, height, locked)
+function DumbgeonObject(name, height)
 {
 	this.name = name;
 	this.height = height;
-	this.locked = locked;
+	this.contains = "none";
 }
 
 function accessCell(row, col)
@@ -42,7 +44,16 @@ let display = null;
 
 async function fetchDumbgeon()
 {
-	dumbgeon = await getDumbgeonByID(getID());
+	if (window.location.toString().endsWith("random"))
+	{
+		dumbgeon = await randomDumbgeon();
+		pristineRandom = true;
+		regChange();
+	}
+	else
+	{
+		dumbgeon = await getDumbgeonByID(getID());
+	}
 }
 
 async function init()
@@ -133,7 +144,7 @@ async function createJSContent()
 
 function updateHeader()
 {
-	document.getElementById("header").innerHTML = "Редактирование " + dumbgeon.name;
+	document.getElementById("header").innerHTML = "Редактирование " + dumbgeon.name + (pristineRandom ? " (не сохранена)" : "");
 }
 
 function updateMeta()
@@ -336,6 +347,7 @@ function updateCellInfo(row, col)
 			col.toString() + ").objects.splice(" + i + ", 1); updateSingleContent(" + row.toString() + ", " +
 			col.toString() + "); updateCellInfo(" + row.toString() + ", " +
 			col.toString() + "); regChange();");
+
 		td.appendChild(removeButton);
 		td.innerHTML += "&nbsp;"
 
@@ -358,6 +370,64 @@ function updateCellInfo(row, col)
 
 		td.appendChild(objImg);
 		td.innerHTML += "&nbsp;" + objVisibles[objSelection.indexOf(object.name)];
+
+		if (object.contains !== "none")
+		{
+			// Add the contained objects
+			td.innerHTML += "<br>Содержит:<br>";
+
+			for (let oi = 0; oi < object.contains.length; oi++)
+			{
+				const objInside = object.contains[oi];
+
+				const objInsideRemoveButton = document.createElement("button");
+				objInsideRemoveButton.innerHTML = "X";
+				objInsideRemoveButton.className = "actionButton";
+				objInsideRemoveButton.style.width = "10%";
+				objInsideRemoveButton.style.padding = "0";
+				objInsideRemoveButton.style.backgroundColor = "#ffbbbb";
+				objInsideRemoveButton.setAttribute("onclick", "accessCell(" + row.toString() + ", " +
+					col.toString() + ").objects[" + i.toString() + "].contains.splice(" + oi + ", 1); regChange();" +
+					"updateCellInfo(" + row.toString() + ", " + col.toString() + ");");
+				td.appendChild(objInsideRemoveButton);
+
+				td.innerHTML += "&nbsp;" + objVisibles[objSelection.indexOf(objInside.name)] + "<br>";
+			}
+
+			// The object adding menu
+
+			const newObjToContainSelect = document.createElement("select");
+			newObjToContainSelect.id = "newObjToContainIn" + i.toString();
+			newObjToContainSelect.style.width = "50%";
+			for (let o = 0; o < objSelection.length; o++)
+			{
+				if (objSelection[o] === "remove") continue;
+				if (objSelection[o].startsWith("obj_container_")) continue;
+
+				const optionElement = document.createElement("option");
+				optionElement.innerHTML = objVisibles[o];
+				optionElement.value = objSelection[o];
+
+				newObjToContainSelect.appendChild(optionElement);
+			}
+
+			td.appendChild(newObjToContainSelect);
+
+			const addObjButton = document.createElement("button");
+			addObjButton.innerHTML = "+";
+			addObjButton.className = "actionButton";
+			addObjButton.style.width = "10%";
+			addObjButton.style.padding = "0";
+			addObjButton.setAttribute("onclick", "accessCell(" + row.toString() + ", " + col.toString() + ")." +
+				"objects[" + i.toString() + "]." +
+				"contains.push(new DumbgeonObject(" +
+				"document.getElementById('newObjToContainIn" + i.toString() + "').value, 0));" +
+				"regChange();" +
+				"updateCellInfo(" + row.toString() + ", " + col.toString() + ")");
+
+			td.appendChild(addObjButton);
+			td.innerHTML += "&nbsp;"
+		}
 	}
 }
 
@@ -398,6 +468,28 @@ async function editAction()
 	}
 
 	const data = Object.assign({}, addMeta(), await addContent());
+
+	if (pristineRandom)
+	{
+		const newDumbgeon = await addDumbgeon(data.name, data.width, data.height);
+
+		if (typeof(newDumbgeon) === "number")
+		{
+			if (newDumbgeon === 409)
+			{
+				alert("Локация с таким названием уже существует!");
+			}
+			else
+			{
+				alert("Ошибка создания локации!");
+			}
+
+			return;
+		}
+
+		dumbgeon = newDumbgeon;
+		pristineRandom = false;
+	}
 
 	const updateStatus = await updateDumbgeon(dumbgeon._id.toString(), data);
 
@@ -732,12 +824,12 @@ function cellClickObj(row, col)
 {
 	const object = document.getElementById("brushObj").value;
 
-	const objToSet =
+	const objToSet = new DumbgeonObject(object, 0);
+
+	if (object.startsWith("obj_container_"))
 	{
-		name: object,
-		height: 0,
-		locked: false
-	};
+		objToSet.contains = [];
+	}
 
 	if (brushMode === "single")
 	{
